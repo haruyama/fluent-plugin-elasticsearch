@@ -27,6 +27,7 @@ Notice: no relationship with [btigit/fluent-plugin-solr](https://github.com/btig
   core collection1
   include_tag_key true
   tag_key tag
+  use_utc false
   flush_interval 3s
 </match>
 ```
@@ -64,6 +65,8 @@ See: [UniqueKey - Solr Wiki](https://wiki.apache.org/solr/UniqueKey)
    <field name="referer" type="string"  indexed="true" stored="true"/>
    <field name="agent"   type="text_ws" indexed="true" stored="true"/>
    <field name="tag"     type="string"  indexed="true" stored="true"/>
+
+   <field name="timestamp" type="tdate"   indexed="true" stored="true"/>
 ```
 
 ## Contributing
