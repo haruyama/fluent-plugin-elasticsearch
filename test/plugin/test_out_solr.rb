@@ -4,7 +4,7 @@ require 'fluent/test'
 require 'fluent/plugin/out_solr'
 
 require 'webmock/test_unit'
-require 'date'
+require 'timecop'
 
 require 'helper'
 
@@ -16,6 +16,7 @@ WebMock.disable_net_connect!
 # Solr output test
 class SolrOutput < Test::Unit::TestCase
   attr_accessor :index_cmds, :content_type
+  attr_accessor :index_cmds2
 
   def setup
     Fluent::Test.setup
@@ -37,16 +38,25 @@ class SolrOutput < Test::Unit::TestCase
     end
   end
 
+  def stub_solr2(url = 'http://localhost:8983/solr/collection1/update')
+    stub_request(:post, url).with do |req|
+      @index_cmds2   = JSON.parse(req.body)
+    end
+  end
+
   def stub_solr_unavailable(url = 'http://localhost:8983/solr/collection1/update')
     stub_request(:post, url).to_return(status: [503, 'Service Unavailable'])
   end
 
   def test_writes_to_default_index
     stub_solr
-    driver.emit(sample_record)
+    Timecop.freeze(Time.local(2013, 12, 20, 19, 0, 0)) do
+      driver.emit(sample_record)
+    end
     driver.run
-    assert_equal(26,   @index_cmds[0]['age'])
-    assert_equal('42', @index_cmds[0]['request_id'])
+    assert_equal(26,                     @index_cmds[0]['age'])
+    assert_equal('42',                   @index_cmds[0]['request_id'])
+    assert_equal('2013-12-20T19:00:00Z', @index_cmds[0]['timestamp'])
   end
 
   def test_wrties_with_proper_content_type
@@ -85,7 +95,7 @@ class SolrOutput < Test::Unit::TestCase
     driver.emit(sample_record)
     driver.emit(sample_record.merge('age' => 27))
     driver.run
-    assert_equal(2, index_cmds.count)
+    assert_equal(2,  @index_cmds.count)
     assert_equal(26, @index_cmds[0]['age'])
     assert_equal(27, @index_cmds[1]['age'])
   end
@@ -94,7 +104,7 @@ class SolrOutput < Test::Unit::TestCase
     stub_solr
     driver.emit(sample_record)
     driver.run
-    assert_nil(index_cmds[0]['tag'])
+    assert_nil(@index_cmds[0]['tag'])
   end
 
   def test_adds_tag_key_when_configured
@@ -102,8 +112,34 @@ class SolrOutput < Test::Unit::TestCase
     stub_solr
     driver.emit(sample_record)
     driver.run
-    assert(index_cmds[0].key?('tag'))
-    assert_equal(index_cmds[0]['tag'], 'mytag')
+    assert(@index_cmds[0].key?('tag'))
+    assert_equal(@index_cmds[0]['tag'], 'mytag')
+  end
+
+  def test_use_utc
+    driver.configure("use_utc true\n")
+    stub_solr
+    Timecop.freeze(Time.local(2013, 12, 20, 19, 0, 0)) do
+      driver.emit(sample_record)
+    end
+    driver.run
+    assert_equal('2013-12-20T10:00:00Z', @index_cmds[0]['timestamp'])
+  end
+
+  def test_use_core_rotation
+    driver.configure("use_core_rotation true\n")
+    driver.configure("core_prefix log\n")
+    stub_solr('http://localhost:8983/solr/log-2013-12-20/update')
+    stub_solr2('http://localhost:8983/solr/log-2013-12-21/update')
+    Timecop.freeze(Time.local(2013, 12, 20, 19, 0, 0)) do
+      driver.emit(sample_record)
+    end
+    Timecop.freeze(Time.local(2013, 12, 21, 19, 0, 0)) do
+      driver.emit(sample_record)
+    end
+    driver.run
+    assert_equal(1,  @index_cmds.count)
+    assert_equal(1,  @index_cmds2.count)
   end
 
   def test_request_error

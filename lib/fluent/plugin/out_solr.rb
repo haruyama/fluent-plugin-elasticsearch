@@ -6,11 +6,13 @@ require 'uri'
 class Fluent::SolrOutput < Fluent::BufferedOutput
   Fluent::Plugin.register_output('solr', self)
 
-  config_param :host,       :string,  default: 'localhost'
-  config_param :port,       :integer, default: 8983
-  config_param :core,       :string,  default: 'collection1'
-  config_param :time_field, :string,  default: 'timestamp'
-  config_param :use_utc,    :bool,    default: false
+  config_param :host,              :string,  default: 'localhost'
+  config_param :port,              :integer, default: 8983
+  config_param :core,              :string,  default: 'collection1'
+  config_param :use_core_rotation, :bool,    default: false
+  config_param :core_prefix,       :string,  default: 'core'
+  config_param :time_field,        :string,  default: 'timestamp'
+  config_param :use_utc,           :bool,    default: false
 
   include Fluent::SetTagKeyMixin
   config_set_default :include_tag_key, false
@@ -36,25 +38,25 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
   end
 
   def write(chunk)
-    bulk_message = []
+    bulk_messages = Hash.new { |h, k| h[k] = [] }
 
-    chunk.msgpack_each do |tag, time, record|
-
-      time_string =
-        if @use_utc
-          Time.at(time).utc.strftime('%FT%TZ')
-        else
-          Time.at(time).strftime('%FT%TZ')
-        end
-
-      record.merge!(@time_field => time_string)
+    chunk.msgpack_each do |tag, unixtime, record|
+      time = Time.at(unixtime)
+      time = time.utc if @use_utc
+      record.merge!(@time_field => time.strftime('%FT%TZ'))
       record.merge!(@tag_key    => tag) if @include_tag_key
-      bulk_message << record
+      if @use_core_rotation
+        bulk_messages[@core_prefix + '-' + time.strftime('%F')] << record
+      else
+        bulk_messages[@core] << record
+      end
     end
 
     http = Net::HTTP.new(@host, @port.to_i)
-    request = Net::HTTP::Post.new('/solr/' + URI.escape(@core) + '/update', 'content-type' => 'application/json; charset=utf-8')
-    request.body = Yajl::Encoder.encode(bulk_message)
-    http.request(request).value
+    bulk_messages.each do |corename, messages|
+      request = Net::HTTP::Post.new('/solr/' + URI.escape(corename) + '/update', 'content-type' => 'application/json; charset=utf-8')
+      request.body = Yajl::Encoder.encode(messages)
+      http.request(request).value
+    end
   end
 end

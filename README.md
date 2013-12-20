@@ -12,6 +12,8 @@ Notice: no relationship with [btigit/fluent-plugin-solr](https://github.com/btig
 
 ### fluent.conf snippet
 
+#### single core
+
 ```
 <source>
   type tail
@@ -27,6 +29,33 @@ Notice: no relationship with [btigit/fluent-plugin-solr](https://github.com/btig
   core collection1
   include_tag_key true
   tag_key tag
+  time_field timestamp
+  use_utc false
+  flush_interval 3s
+</match>
+```
+
+#### core rotation by date
+
+You should create cores in advance.
+
+```
+<source>
+  type tail
+  format apache
+  path /tmp/access.log
+  tag apache.access
+</source>
+
+<match apache.*>
+  type solr
+  host localhost
+  port 8983
+  use_core_rotation true
+  core_prefix apache
+  include_tag_key true
+  tag_key tag
+  time_field timestamp
   use_utc false
   flush_interval 3s
 </match>
