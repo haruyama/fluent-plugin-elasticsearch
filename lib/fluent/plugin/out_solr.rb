@@ -4,7 +4,7 @@ require 'date'
 
 # Solr output plugin for Fluent
 class Fluent::SolrOutput < Fluent::BufferedOutput
-  Fluent::Plugin.register_output('elasticsearch', self)
+  Fluent::Plugin.register_output('out-solr', self)
 
   config_param :host,       :string,  default: 'localhost'
   config_param :port,       :integer, default: 8983
