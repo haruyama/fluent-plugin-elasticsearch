@@ -9,6 +9,8 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
   config_param :host,       :string,  default: 'localhost'
   config_param :port,       :integer, default: 8983
   config_param :core,       :string,  default: 'collection1'
+  config_param :time_field, :string,  default: 'timestamp'
+  config_param :use_utc,    :bool,    default: false
 
   include Fluent::SetTagKeyMixin
   config_set_default :include_tag_key, false
@@ -37,8 +39,16 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
     bulk_message = []
 
     chunk.msgpack_each do |tag, time, record|
-      record.merge!(@tag_key => tag) if @include_tag_key
 
+      time_string =
+        if @use_utc
+          Time.at(time).utc.strftime('%FT%TZ')
+        else
+          Time.at(time).strftime('%FT%TZ')
+        end
+
+      record.merge!(@time_field => time_string)
+      record.merge!(@tag_key    => tag) if @include_tag_key
       bulk_message << record
     end
 
