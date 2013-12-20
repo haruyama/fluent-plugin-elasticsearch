@@ -63,9 +63,20 @@ You should create cores in advance.
 
 ### solrconfig.xml snippet
 
-See: [UniqueKey - Solr Wiki](https://wiki.apache.org/solr/UniqueKey)
+* See: [UniqueKey - Solr Wiki](https://wiki.apache.org/solr/UniqueKey)
+* fluent-plugin-out-solr doesn't commit. use autoSoftCommit and autoCommit.
+
 
 ```xml
+  <autoCommit>
+    <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+    <openSearcher>false</openSearcher>
+  </autoCommit>
+
+  <autoSoftCommit>
+    <maxTime>${solr.autoSoftCommit.maxTime:10}</maxTime>
+  </autoSoftCommit>
+
   <requestHandler name="/update" class="solr.UpdateRequestHandler">
     <lst name="defaults">
       <str name="update.chain">uuid</str>
