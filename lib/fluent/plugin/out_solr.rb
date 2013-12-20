@@ -1,6 +1,4 @@
 # encoding: UTF-8
-require 'net/http'
-require 'uri'
 
 # Solr output plugin for Fluent
 class Fluent::SolrOutput < Fluent::BufferedOutput
@@ -18,6 +16,9 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
   config_set_default :include_tag_key, false
 
   def initialize
+    require 'net/http'
+    require 'uri'
+    require 'time'
     super
   end
 
