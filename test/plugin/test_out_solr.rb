@@ -4,7 +4,6 @@ require 'fluent/test'
 require 'fluent/plugin/out_solr'
 
 require 'webmock/test_unit'
-require 'timecop'
 
 require 'helper'
 
@@ -50,9 +49,7 @@ class SolrOutput < Test::Unit::TestCase
 
   def test_writes_to_default_index
     stub_solr
-    Timecop.freeze(Time.local(2013, 12, 20, 19, 0, 0)) do
-      driver.emit(sample_record)
-    end
+    driver.emit(sample_record, Time.local(2013, 12, 20, 19, 0, 0).to_i)
     driver.run
     assert_equal(26,                     @index_cmds[0]['age'])
     assert_equal('42',                   @index_cmds[0]['request_id'])
@@ -119,9 +116,7 @@ class SolrOutput < Test::Unit::TestCase
   def test_use_utc
     driver.configure("use_utc true\n")
     stub_solr
-    Timecop.freeze(Time.local(2013, 12, 20, 19, 0, 0)) do
-      driver.emit(sample_record)
-    end
+    driver.emit(sample_record, Time.local(2013, 12, 20, 19, 0, 0).to_i)
     driver.run
     assert_equal('2013-12-20T10:00:00Z', @index_cmds[0]['timestamp'])
   end
@@ -131,12 +126,8 @@ class SolrOutput < Test::Unit::TestCase
     driver.configure("core_prefix log\n")
     stub_solr('http://localhost:8983/solr/log-2013-12-20/update')
     stub_solr2('http://localhost:8983/solr/log-2013-12-21/update')
-    Timecop.freeze(Time.local(2013, 12, 20, 19, 0, 0)) do
-      driver.emit(sample_record)
-    end
-    Timecop.freeze(Time.local(2013, 12, 21, 19, 0, 0)) do
-      driver.emit(sample_record)
-    end
+    driver.emit(sample_record, Time.local(2013, 12, 20, 19, 0, 0).to_i)
+    driver.emit(sample_record, Time.local(2013, 12, 21, 19, 0, 0).to_i)
     driver.run
     assert_equal(1,  @index_cmds.count)
     assert_equal(1,  @index_cmds2.count)
