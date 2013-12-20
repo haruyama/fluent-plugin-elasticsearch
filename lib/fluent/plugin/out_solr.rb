@@ -1,16 +1,14 @@
 # encoding: UTF-8
 require 'net/http'
-require 'date'
+require 'uri'
 
 # Solr output plugin for Fluent
 class Fluent::SolrOutput < Fluent::BufferedOutput
-  Fluent::Plugin.register_output('out-solr', self)
+  Fluent::Plugin.register_output('solr', self)
 
   config_param :host,       :string,  default: 'localhost'
   config_param :port,       :integer, default: 8983
   config_param :core,       :string,  default: 'collection1'
-  config_param :type_name,  :string,  default: 'fluentd'
-  config_param :index_name, :string,  default: 'fluentd'
 
   include Fluent::SetTagKeyMixin
   config_set_default :include_tag_key, false
@@ -45,7 +43,7 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
     end
 
     http = Net::HTTP.new(@host, @port.to_i)
-    request = Net::HTTP::Post.new('/solr/' + @core + '/update', 'content-type' => 'application/json; charset=utf-8')
+    request = Net::HTTP::Post.new('/solr/' + URI.escape(@core) + '/update', 'content-type' => 'application/json; charset=utf-8')
     request.body = Yajl::Encoder.encode(bulk_message)
     http.request(request).value
   end
