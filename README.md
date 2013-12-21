@@ -30,14 +30,17 @@ Notice: no relationship with [btigit/fluent-plugin-solr](https://github.com/btig
   include_tag_key true
   tag_key tag
   time_field timestamp
-  use_utc false
+  utc # if you do not want to use localtime
+
   flush_interval 3s
 </match>
 ```
 
-#### core rotation by date
+#### time sliced by date
 
 You should create cores in advance.
+
+See: [Time Sliced Plugin Overview - Buffer Plugin Overview | Fluentd](http://docs.fluentd.org/articles/buffer-plugin-overview#time-sliced-plugin-overview)
 
 ```
 <source>
@@ -48,24 +51,35 @@ You should create cores in advance.
 </source>
 
 <match apache.*>
-  type solr
+  type solr_time_sliced
   host localhost
   port 8983
-  use_core_rotation true
-  core_prefix apache
+  core log-%Y%m%d
   include_tag_key true
   tag_key tag
   time_field timestamp
-  use_utc false
+  utc # if you do not want to use localtime
+
   flush_interval 3s
 </match>
 ```
 
 ### solrconfig.xml snippet
 
-See: [UniqueKey - Solr Wiki](https://wiki.apache.org/solr/UniqueKey)
+* See: [UniqueKey - Solr Wiki](https://wiki.apache.org/solr/UniqueKey)
+* fluent-plugin-out-solr doesn't commit. use autoSoftCommit and autoCommit.
+
 
 ```xml
+  <autoCommit>
+    <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+    <openSearcher>false</openSearcher>
+  </autoCommit>
+
+  <autoSoftCommit>
+    <maxTime>${solr.autoSoftCommit.maxTime:10}</maxTime>
+  </autoSoftCommit>
+
   <requestHandler name="/update" class="solr.UpdateRequestHandler">
     <lst name="defaults">
       <str name="update.chain">uuid</str>
