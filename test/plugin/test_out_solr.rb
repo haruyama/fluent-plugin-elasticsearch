@@ -15,7 +15,6 @@ WebMock.disable_net_connect!
 # Solr output test
 class SolrOutput < Test::Unit::TestCase
   attr_accessor :index_cmds, :content_type
-  attr_accessor :index_cmds2
 
   def setup
     Fluent::Test.setup
@@ -34,12 +33,6 @@ class SolrOutput < Test::Unit::TestCase
     stub_request(:post, url).with do |req|
       @content_type = req.headers['Content-Type']
       @index_cmds = JSON.parse(req.body)
-    end
-  end
-
-  def stub_solr2(url = 'http://localhost:8983/solr/collection1/update')
-    stub_request(:post, url).with do |req|
-      @index_cmds2   = JSON.parse(req.body)
     end
   end
 
@@ -113,24 +106,14 @@ class SolrOutput < Test::Unit::TestCase
     assert_equal(@index_cmds[0]['tag'], 'mytag')
   end
 
-  def test_use_utc
-    driver.configure("use_utc true\n")
+  def test_utc
+    driver.configure("utc\n")
     stub_solr
+    ENV['TZ'] = 'Japan'
     driver.emit(sample_record, Time.local(2013, 12, 20, 19, 0, 0).to_i)
+    ENV['TZ'] = nil
     driver.run
     assert_equal('2013-12-20T10:00:00Z', @index_cmds[0]['timestamp'])
-  end
-
-  def test_use_core_rotation
-    driver.configure("use_core_rotation true\n")
-    driver.configure("core_prefix log\n")
-    stub_solr('http://localhost:8983/solr/log-2013-12-20/update')
-    stub_solr2('http://localhost:8983/solr/log-2013-12-21/update')
-    driver.emit(sample_record, Time.local(2013, 12, 20, 19, 0, 0).to_i)
-    driver.emit(sample_record, Time.local(2013, 12, 21, 19, 0, 0).to_i)
-    driver.run
-    assert_equal(1,  @index_cmds.count)
-    assert_equal(1,  @index_cmds2.count)
   end
 
   def test_request_error
