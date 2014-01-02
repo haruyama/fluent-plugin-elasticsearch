@@ -67,7 +67,7 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
 
   def test_wrties_with_proper_content_type
     stub_solr
-    driver.emit(sample_record)
+    driver.emit(sample_record, time)
     driver.run
     assert_equal('application/json; charset=utf-8', @content_type)
   end
@@ -124,7 +124,7 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
 
   def test_doesnt_add_tag_key_by_default
     stub_solr
-    driver.emit(sample_record)
+    driver.emit(sample_record, time)
     driver.run
     assert_nil(@index_cmds[0]['tag'])
   end
@@ -148,6 +148,16 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
     assert_equal('2013-12-21T22:30:00Z', @index_cmds[0]['timestamp'])
   end
 
+  def test_utc2
+    driver.configure("utc\n")
+    stub_solr2
+    ENV['TZ'] = 'Europe/Berlin'
+    driver.emit(sample_record, Time.local(2013, 12, 22, 7, 30, 0).to_i)
+    ENV['TZ'] = nil
+    driver.run
+    assert_equal('2013-12-22T06:30:00Z', @index_cmds2[0]['timestamp'])
+  end
+
   def test_emit_records_on_different_days
     stub_solr
     stub_solr2
@@ -164,5 +174,13 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
     assert_raise(Net::HTTPFatalError) do
       driver.run
     end
+  end
+
+  def test_writes_with_commit
+    driver.configure("commit true\n")
+    solr_request = stub_solr('http://localhost:8983/solr/log-20131221/update?commit=true')
+    driver.emit(sample_record, time)
+    driver.run
+    assert_requested(solr_request)
   end
 end
