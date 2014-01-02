@@ -41,6 +41,6 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
   end
 
   def write(chunk)
-    update_core(chunk, @core, @commit)
+    update_core(chunk, @core)
   end
 end

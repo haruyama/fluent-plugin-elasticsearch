@@ -52,6 +52,6 @@ class Fluent::SolrTimeSlicedOutput < Fluent::TimeSlicedOutput
   end
 
   def write(chunk)
-    update_core(chunk, core_format(chunk.key), @commit)
+    update_core(chunk, core_format(chunk.key))
   end
 end

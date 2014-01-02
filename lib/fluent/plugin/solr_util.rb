@@ -4,7 +4,7 @@ require 'uri'
 
 # Solr utility
 module SolrUtil
-  def update_core(chunk, core, commit = false)
+  def update_core(chunk, core)
     documents = []
 
     chunk.msgpack_each do |tag, unixtime, record|
@@ -17,7 +17,7 @@ module SolrUtil
 
     http = Net::HTTP.new(@host, @port.to_i)
     url = '/solr/' + URI.escape(core) + '/update'
-    url += '&commit=true' if commit
+    url += '?commit=true' if @commit
     request = Net::HTTP::Post.new(url, 'content-type' => 'application/json; charset=utf-8')
     request.body = Yajl::Encoder.encode(documents)
     http.request(request).value
