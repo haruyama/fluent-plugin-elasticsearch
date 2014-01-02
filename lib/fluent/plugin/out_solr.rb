@@ -6,16 +6,11 @@ class Fluent::SolrOutput < Fluent::BufferedOutput
 
   require 'fluent/plugin/solr_util'
   include SolrUtil
+  require 'fluent/plugin/solr_config_common'
+  include SolrConfigCommon
 
-  config_param :host,              :string,  default: 'localhost'
-  config_param :port,              :integer, default: 8983
-  config_param :core,              :string,  default: 'collection1'
-  config_param :time_field,        :string,  default: 'timestamp'
+  config_param :core, :string,  default: 'collection1'
 
-  include Fluent::SetTagKeyMixin
-  config_set_default :include_tag_key, false
-
-  attr_accessor :localtime
   def initialize
     require 'net/http'
     require 'uri'

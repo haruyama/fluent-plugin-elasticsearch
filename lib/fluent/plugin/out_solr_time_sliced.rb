@@ -6,19 +6,13 @@ class Fluent::SolrTimeSlicedOutput < Fluent::TimeSlicedOutput
 
   require 'fluent/plugin/solr_util'
   include SolrUtil
+  require 'fluent/plugin/solr_config_common'
+  include SolrConfigCommon
 
   config_set_default :buffer_type,       'memory'
   config_set_default :time_slice_format, '%Y%m%d'
 
-  config_param :host,              :string,  default: 'localhost'
-  config_param :port,              :integer, default: 8983
-  config_param :core,              :string,  default: 'log-%Y%m%d'
-  config_param :time_field,        :string,  default: 'timestamp'
-
-  include Fluent::SetTagKeyMixin
-  config_set_default :include_tag_key, false
-
-  attr_accessor :localtime
+  config_param :core, :string,  default: 'log-%Y%m%d'
 
   def initialize
     require 'net/http'
