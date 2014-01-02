@@ -67,7 +67,7 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
 
   def test_wrties_with_proper_content_type
     stub_solr
-    driver.emit(sample_record)
+    driver.emit(sample_record, time)
     driver.run
     assert_equal('application/json; charset=utf-8', @content_type)
   end
@@ -124,7 +124,7 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
 
   def test_doesnt_add_tag_key_by_default
     stub_solr
-    driver.emit(sample_record)
+    driver.emit(sample_record, time)
     driver.run
     assert_nil(@index_cmds[0]['tag'])
   end
