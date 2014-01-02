@@ -1,8 +1,10 @@
 # encoding: UTF-8
 
+require 'uri'
+
 # Solr utility
 module SolrUtil
-  def update_core(chunk, core)
+  def update_core(chunk, core, commit = false)
     documents = []
 
     chunk.msgpack_each do |tag, unixtime, record|
@@ -14,7 +16,9 @@ module SolrUtil
     end
 
     http = Net::HTTP.new(@host, @port.to_i)
-    request = Net::HTTP::Post.new('/solr/' + URI.escape(core) + '/update', 'content-type' => 'application/json; charset=utf-8')
+    url = '/solr/' + URI.escape(core) + '/update'
+    url += '&commit=true' if commit
+    request = Net::HTTP::Post.new(url, 'content-type' => 'application/json; charset=utf-8')
     request.body = Yajl::Encoder.encode(documents)
     http.request(request).value
   end

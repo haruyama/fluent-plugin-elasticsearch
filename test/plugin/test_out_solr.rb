@@ -123,4 +123,12 @@ class SolrOutput < Test::Unit::TestCase
       driver.run
     end
   end
+
+  def test_writes_with_commit
+    driver.configure("commit true\n")
+    solr_request = stub_solr('http://localhost:8983/solr/collection1/update&commit=true')
+    driver.emit(sample_record)
+    driver.run
+    assert_requested(solr_request)
+  end
 end

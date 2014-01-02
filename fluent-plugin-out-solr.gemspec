@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name          = 'fluent-plugin-out-solr'
-  s.version       = '0.0.4'
+  s.version       = '0.0.5'
   s.authors       = ['diogo', 'pitr', 'haruyama']
   s.email         = ['team@uken.com', 'haruyama@unixuser.org']
   s.description   = %q{Solr output plugin for Fluent event collector}

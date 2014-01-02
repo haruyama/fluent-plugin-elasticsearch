@@ -175,4 +175,12 @@ class SolrTimeSlicedOutputTest < Test::Unit::TestCase
       driver.run
     end
   end
+
+  def test_writes_with_commit
+    driver.configure("commit true\n")
+    solr_request = stub_solr('http://localhost:8983/solr/log-20131221/update&commit=true')
+    driver.emit(sample_record, time)
+    driver.run
+    assert_requested(solr_request)
+  end
 end

@@ -30,7 +30,8 @@ Notice: no relationship with [btigit/fluent-plugin-solr](https://github.com/btig
   include_tag_key true
   tag_key tag
   time_field timestamp
-  utc # if you do not want to use localtime
+#  utc # if you do not want to use localtime
+#  commit true # if you want to commit explicitly
 
   flush_interval 3s
 </match>
@@ -58,7 +59,8 @@ See: [Time Sliced Plugin Overview - Buffer Plugin Overview | Fluentd](http://doc
   include_tag_key true
   tag_key tag
   time_field timestamp
-  utc # if you do not want to use localtime
+#  utc # if you do not want to use localtime
+#  commit true # if you want to commit explicitly
 
   flush_interval 3s
 </match>
