@@ -3,5 +3,12 @@ LineLength:
 
 MethodLength:
   Enabled: true
-  CountComments: false # count full line comments?
+  CountComments: false
   Max: 50
+
+CyclomaticComplexity:
+  Max: 10
+
+ClassLength:
+  CountComments: false
+  Max: 100
