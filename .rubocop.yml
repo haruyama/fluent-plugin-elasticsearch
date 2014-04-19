@@ -1,0 +1,7 @@
+LineLength:
+  Enabled: false
+
+MethodLength:
+  Enabled: true
+  CountComments: false # count full line comments?
+  Max: 50
