@@ -1,19 +1,21 @@
 # -*- encoding: utf-8 -*-
-$:.push File.expand_path("../lib", __FILE__)
+require 'English'
+
+$LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |s|
   s.name          = 'fluent-plugin-out-solr'
-  s.version       = '0.0.5'
-  s.authors       = ['diogo', 'pitr', 'haruyama']
-  s.email         = ['team@uken.com', 'haruyama@unixuser.org']
-  s.description   = %q{Solr output plugin for Fluent event collector}
+  s.version       = '0.0.6'
+  s.authors       = %w(diogo pitr haruyama )
+  s.email         = ['haruyama@unixuser.org']
+  s.description   = %q(Solr output plugin for Fluent event collector)
   s.summary       = s.description
   s.homepage      = 'https://github.com/haruyama/fluent-plugin-out-solr'
   s.license       = 'MIT'
 
-  s.files         = `git ls-files`.split($/)
-  s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  s.files         = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
+  s.executables   = s.files.grep(/^bin\//).map { |f| File.basename(f) }
+  s.test_files    = s.files.grep(/^(test|spec|features)\//)
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'fluentd'

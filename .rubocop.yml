@@ -5,6 +5,3 @@ MethodLength:
   Enabled: true
   CountComments: false # count full line comments?
   Max: 50
-
-ClassLength:
-  Enabled: false
