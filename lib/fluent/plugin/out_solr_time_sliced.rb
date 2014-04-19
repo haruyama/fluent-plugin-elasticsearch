@@ -2,7 +2,7 @@
 
 module Fluent
 # Solr output plugin for Fluent
-  class SolrTimeSlicedOutput < Fluent::TimeSlicedOutput
+  class SolrTimeSlicedOutput < TimeSlicedOutput
     Fluent::Plugin.register_output('solr_time_sliced', self)
 
     require 'fluent/plugin/solr_util'

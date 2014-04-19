@@ -2,7 +2,7 @@
 
 module Fluent
   # Solr output plugin for Fluent
-  class SolrOutput < Fluent::BufferedOutput
+  class SolrOutput < BufferedOutput
     Fluent::Plugin.register_output('solr', self)
 
     require 'fluent/plugin/solr_util'
